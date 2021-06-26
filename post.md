@@ -1,4 +1,5 @@
 <!-- TODO: control image sizes using raw html -->
+<!-- TODO: add citations for TATA (for lots of stuff) and Xinyu Wang for DFTA example -->
 
 # E-Graphs Are Minimal DFTAs
 
