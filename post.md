@@ -1,3 +1,5 @@
+<!-- TODO: control image sizes using raw html -->
+
 # E-Graphs Are Minimal DFTAs
 
 ![yolk](img/yolk.png)
