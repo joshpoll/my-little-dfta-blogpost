@@ -35,6 +35,8 @@ Example (from egg blog/paper):
 
 To learn more check out [the egg website.](https://egraphs-good.github.io/)
 
+**Note:** For the purposes of this blog post, the exact details of how rewrite rules work and are applied is not important. We only care about the properties of the final e-graph. The final e-graph has discovered all congruences between terms and sub-terms it represents. The final e-graph recognizes some language L, which is the set of all terms that can be extracted from the root.
+
 ## DFAs: A Refresher
 
 Even if you've seen DFAs before, you might still want to read this section. We introduce DFAs in a
