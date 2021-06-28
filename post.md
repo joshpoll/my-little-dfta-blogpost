@@ -9,7 +9,7 @@
 ![Exeggutor](img/Exeggutor.png)
 
 <!-- TODO: edit to have a more positive clickbait. maybe also make title more clickbaity as well -->
-In this post we'll explain how e-graphs, PL's golden egg, are DFTAs in disguise.
+In this post we'll explain how e-graphs, PL's golden egg, are deterministic finite tree automata (DFTAs) in disguise.
 
 ## E-Graphs
 
@@ -21,12 +21,13 @@ An e-graph is constructed via a collection of rewrite rules. Each rewrite rule h
 
 ### What is it used for?
 
-An e-graph is a useful structure “for building compilers, optimizers, and synthesizers across many domains.” For example (e-graph from blog post):
+An e-graph is a useful structure “for building compilers, optimizers, and synthesizers across many
+domains.” For example (from e-graph blog post):
 - Szalinski shrinks 3D CAD programs to make them more editable. [PLDI 2020]
 - Diospyros automatically vectorizes digital signal processing code. [ASPLOS 2021]
 - Tensat optimizes deep learning compute graphs both better and faster (up to 50x) than the state of the art. [MLSys 2021]
 - Herbie improves the accuracy of floating point expressions. The egg-herbie library made parts of Herbie over 3000x faster! [PLDI 2015]
-SPORES optimizes linear algebra expressions up to 5x better than state-of-the-art. [VLDB 2020]
+- SPORES optimizes linear algebra expressions up to 5x better than state-of-the-art. [VLDB 2020]
 
 The egg paper won a distinguished paper award at POPL ‘21.
 
@@ -35,7 +36,10 @@ Example (from egg blog/paper):
 
 To learn more check out [the egg website.](https://egraphs-good.github.io/)
 
-**Note:** For the purposes of this blog post, the exact details of how rewrite rules work and are applied is not important. We only care about the properties of the final e-graph. The final e-graph has discovered all congruences between terms and sub-terms it represents. The final e-graph recognizes some language L, which is the set of all terms that can be extracted from the root.
+**Note:** For the purposes of this blog post, the exact details of how rewrite rules work and are
+applied is not important. We only care about the properties of the final e-graph. The final e-graph
+has discovered all congruences between terms and sub-terms it represents.
+<!-- The final e-graph recognizes some language L, which is the set of all terms that can be extracted from the root. -->
 
 ## DFAs: A Refresher
 
@@ -76,9 +80,10 @@ It's probably easiest to understand how this DFA works by looking at an example 
 <img src="img/DFA_Recognition.jpg" alt="Running the DFA on 11101 yields q_0" width="50%" />
 
 The
-machine first sees a 1 and doesn't have any existing state. So the $1 \to q_1$ transition rule fires. The
+machine first sees a 1 and doesn't have any existing state, so the $1 \to q_1$ transition rule fires. The
 DFA is now in state $q_1$, which we show by replacing the first symbol with $q_1$. Next, the DFA is in state $q_1$ and sees symbol 1, so the rule $q_11 \to q_1$ fires, and the
-DFA transitions back to state $q_1$. At the end of the input, the DFA is in state $q_0$, which is
+DFA transitions to state $q_1$ again. This process continues until the DFA has consumed the entire
+input word. At the end, the DFA is in state $q_0$, which is
 not an accepting state so the input string is rejected.
 
 We can draw a nice picture of the DFA like so:
@@ -90,8 +95,8 @@ Each transition rule corresponds to a labelled edge in the graph. The label is t
 source (if there is one) is the current state of the DFA. The target is the state the DFA will
 transition into.
 
-This DFA graph is useful for evaluating input words, since you can traverse edges to advance the
-state of the machine.
+This DFA graph is useful for evaluating input words, since you can simulate the execution of a DFA
+by traversing the edges of the graph.
 
 ## DFTAs: Discrete Finite *Tree* Automata
 
@@ -146,20 +151,30 @@ $\Delta:$
   - $\&(q_1, q_0) \to q_0$
   - $\&(q_1, q_1) \to q_1$
 
+Here's an example execution of the DFTA on the input tree $\sim{}(1 \& \sim{}0)$, which we can write
+without syntactic sugar as $\sim{}(\&(1, \sim{}(0)))$.
+
 ![dfta recognition](img/DFTA_Recognition.jpg)
 
 Unlike a DFA where we need to track just one state at a time. We begin our DFTA execution by
-tracking a state at every leaf. We first transition $1$ to $q_1$ and $0$ to $q_0$ using the
+keeping track of a state at every leaf. We first transition $1$ to $q_1$ and $0$ to $q_0$ using the
 transition rules $0 \to q_0$ and $1 \to q_1$, respectively. Next we transition $\sim{}(q_0)$ to
 $q_1$. So far other than having multiple simultaneous starting points, this is very similar to
 executing a DFA. The next step is more interesting. We encounter the binary operation &. To figure
 out what state to transition to, we need to examine the states of its arguments. Since both of its
 arguments are in state $q_1$, we apply the rule $\&(q_1, q_1) \to q_1$ to advance to state $q_1$.
+Finally the DFTA advances to state $q_0$, which is not an accepting state, and so the input is
+rejected (i.e. it does not evaluate to true).
 
 As with a DFA, we can make a compact representation of a DFTA. However, instead of having at most
-one source, we now have one source per function argument! We still have just one target per transition.
+one source, we now have one source per function argument! We still have just one target per
+transition.
 
-We first add 0, 1, and the two ~ transitions. Note that this is actually a DFA! Nothing fancy going
+We use the same legend as before:
+![legend](img/Legend.jpg)
+
+We first add 0, 1, and the two ~ transitions. (Notice this is actually a DFA! It recognizes words
+starting with 0 or 1 followed by zero or more ~s.) Nothing fancy going
 on yet.
 ![dfta hypergraph part 1](img/DFTA_Hypergraph_Part_1.jpg)
 
@@ -182,7 +197,7 @@ Much simpler!
 ## Myhill-Nerode Theorem (and Congruence Closure)
 There is an important theorem associated with DFTAs that is a generalization of a corresponding theorem for DFAs. This theorem gives us a way to describe a canonical minimal DFTA for any recognizable language (that is, for any language we can recognize with *some*, not necessarily minimal, DFTA). This is nice, because it allows us to optimize our DFTAs and also quickly identify whether or not two DFTAs are equivalent.
 
-*Theorem*. Every DFTA $A = (Q, Q_f, F, \Delta)$ recognizing a language $L$ has a unique (and complete) *minimal* DFTA $A_{min}$ which recognizes $L$ (i.e. has the minimal number of states), up to relabeling. [see TATA for a precise statement and proof]
+*Theorem*. Every DFTA $A = (Q, Q_f, F, \Delta)$ recognizing a language $L$ has a unique (and complete*) *minimal* DFTA $A_{min}$ which recognizes $L$ (i.e. has the minimal number of states), up to relabeling. [see TATA for a precise statement and proof]
 
 *Proof sketch*. This theorem is a direct corollary of the **Myhill-Nerode theorem for DFTAs** (which itself is a generalization of the Myhill-Nerode theorem for DFAs). Here’s a proof sketch for Myhill-Nerode.
 
@@ -203,7 +218,7 @@ Essentially, $u \equiv_L v$  when $u$ and $v$ can be "substituted" for each othe
 We refer the reader to TATA for a minimization procedure that computes $A_{min}$ using $A$.
 <!-- upward merging is also a way -->
 
-**Note.** We say a DFTA is complete when there is precisely one transition for each $f \in F$ and
+*We say a DFTA is complete when there is precisely one transition for each $f \in F$ and
 input  It is possible to obtain an (incomplete) DFTA which recognizes $L$ that is one state**states $q_i$.
 smaller than the one described here. In particular, consider the set of terms
 
@@ -235,6 +250,9 @@ to get DFTAs from e-graphs.
 Consider the example from before:
 
 ![e-graph example](img/e-graph.png)
+
+We can redraw this in the box notation we gave earlier.
+
 ![e-graph boxes](img/E-Graph_Boxes.png)
 
 The corresponding DFTA is then given by:
