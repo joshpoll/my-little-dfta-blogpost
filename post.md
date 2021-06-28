@@ -50,11 +50,6 @@ it progresses through exactly one state at a time.
 Here's an example DFA that reads in a string of 0's and 1's and accepts the string iff all the
 symbols are 1's (i.e. "and"-ing together all the symbols yields true).
 
-Normally when defining a DFA we specify some start states. Here there are no start states, just
-special transition rules that don't take previous states.
-
-Here's a formal definition of the DFA.
-
 States:
 $Q = \{q_0, q_1\}$
 
@@ -73,7 +68,10 @@ $\Delta:$
   - $q_10 \to q_0$
   - $q_11 \to q_1$
 
-It's probably easiest to understand how the DFA works by looking at an example execution:
+Most descriptions of DFAs specify starting states. In our formalism there are no start states, just
+special transition rules ($0 \to q_0$ and $1 \to q_1$) that don't take previous states.
+
+It's probably easiest to understand how this DFA works by looking at an example execution:
 
 <img src="img/DFA_Recognition.jpg" alt="Running the DFA on 11101 yields q_0" width="50%" />
 
