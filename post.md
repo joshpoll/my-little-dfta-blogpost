@@ -14,7 +14,7 @@ In this post we'll explain how e-graphs, PL's golden egg, are deterministic fini
 This section provides a quick background on e-graphs. Feel free to skip this section if you already
 know what they are!
 
-For a more detailed introduction to e-graphs and the egg library, check out the [egg website.](https://egraphs-good.github.io/)
+For a more detailed introduction to e-graphs and the egg library, check out the [egg website](https://egraphs-good.github.io/).
 
 ### What is an e-graph?
 
@@ -54,7 +54,7 @@ has discovered all congruences between terms and sub-terms it represents.
 Even if you've seen DFAs before, you might still want to read this section. We introduce DFAs in a
 slightly different way that generalizes more readily to DFTAs.
 
-A deterministic finite automaton (DFA) is a finite-state machine that takes in a word (i.e. string of
+A deterministic finite automaton (DFA) is a finite-state machine that takes in a word (i.e. a string of
 symbols pulled from a finite alphabet) and either accepts or rejects that word. It operates on one symbol at a
 time. A DFA is deterministic, because
 it progresses through exactly one state at a time.
@@ -109,15 +109,13 @@ Each transition rule corresponds to a labelled edge in the graph. The label is t
 source (if there is one) is the current state of the DFA. The target is the state the DFA will
 transition into.
 
-This DFA graph is useful for evaluating input words, since you can simulate the execution of a DFA
+Representing a DFA as a graph is useful for evaluating input words by hand, since you can simulate the execution of a DFA
 by traversing the edges of the graph.
 
 ## DFTAs: Deterministic Finite *Tree* Automata
 
 DFTAs are like DFAs except instead of recognizing words, DFTAs recognize trees. The core pieces of
-the definitions remain the same.
-
-DFTAs are especially useful in PL, because we often work with ASTs, which are trees.
+the definitions remain the same. DFTAs are especially useful in PL, because we often work with ASTs, which are trees.
 
 *In the rest of this post we borrow heavily from [Tree Automata Techniques and Applications
 (TATA)](http://tata.gforge.inria.fr/) for definitions and theorems about DFTAs.*
@@ -129,12 +127,12 @@ Formally a DFTA is a collection of the following:
 - A subset of states `Qf ⊆ Q` that accept.
 
 - An alphabet of function symbols `F = {f(-, ..., -)}` where each `f` has fixed (possibly 0)
-arity.
+  arity.
 
 - A set of transition rules `{f(q₁, ..., qₙ) -> q}` where `q₁, ..., qₙ, q ∈ Q` and
-`f ∈ F`. Since the DFTA is deterministic, the left-hand sides of the transition rules must be unique.
+  `f ∈ F`. Since the DFTA is deterministic, the left-hand sides of the transition rules must be unique.
 
-This generalizes the DFA definition. There are multiple ways to do so including having a special
+This generalizes the DFA definition. There are multiple ways to simulate a DFA using a DFTA including having a special
 nullary symbol `#` and writing e.g. `abc` as `c(b(a(#)))`. In the treatment we gave in the previous
 section, we would introduce each symbol as both a nullary and unary function and then write e.g.
 `abc` as `c(b(a))`.
@@ -142,14 +140,14 @@ section, we would introduce each symbol as both a nullary and unary function and
 Let’s see how a DFTA works
 by generalizing our DFA example significantly. We define the language of boolean expressions
 involving `0`, `1`, `~`, and `&`. We can then define transition rules to determine whether the expression
-evaluates to true or false. The transitions rules are essentially just the semantics of the expressions.
-
-This example was borrowed from Xinyu Wang’s [DFTA work](https://web.eecs.umich.edu/~xwangsd/pubs/oopsla17.pdf):
+evaluates to true or false. The transitions rules are essentially just the semantics of the
+expressions. We borrowed this example from Xinyu Wang’s [DFTA
+work](https://web.eecs.umich.edu/~xwangsd/pubs/oopsla17.pdf).
 <!-- todo: more precise citation -->
 
 - States: `Q = {q₀, q₁}`
 
-- Accepting States: `Q_f = {q₁}`
+- Accepting States: `Qf = {q₁}`
 
 - Alphabet: `F = {0, 1, ∼(−), &(−, −)}`
 
@@ -216,9 +214,14 @@ state of the DFTA. Then we push each label pointing to that state into the box.
 Much simpler!
 
 ## Myhill-Nerode Theorem (and Congruence Closure)
+
+The astute reader may have noticed the visualization above looks a lot like an e-graph! We're almost
+there, but our DFTA formalism is still missing one crucial feature: congruence. In this section
+we'll see how congruence "pops out" of the Myhill-Nerode theorem for DFTAs.
+
 There is an important theorem associated with DFTAs that is a generalization of a corresponding theorem for DFAs. This theorem gives us a way to describe a canonical minimal DFTA for any recognizable language (that is, for any language we can recognize with *some*, not necessarily minimal, DFTA). This is nice, because it allows us to optimize our DFTAs and also quickly identify whether or not two DFTAs are equivalent.
 
-*Theorem*. Every DFTA `A = (Q, Qf, F, Δ)` recognizing a language `L` has a unique (and complete*) *minimal* DFTA `A_min` which recognizes `L` (i.e. has the minimal number of states), up to relabeling. [see TATA for a precise statement and proof]
+*Theorem*. Every DFTA `A = (Q, Qf, F, Δ)` recognizing a language `L` has a unique (and complete*) *minimal* DFTA `A_min` which recognizes `L` (i.e. has the minimal number of states), up to relabeling. (See [TATA](http://tata.gforge.inria.fr/) for a precise statement and proof.)
 
 *Proof sketch*. This theorem is a direct corollary of the **Myhill-Nerode theorem for DFTAs** (which itself is a generalization of the Myhill-Nerode theorem for DFAs). Here’s a proof sketch for Myhill-Nerode.
 
@@ -234,50 +237,48 @@ the congruence `≡L` on `T(F)`, the set of terms using symbols in `F`,  by
 `u ≡L v := ∀f ∈ F. f(..., u, ...) ∈ L ⟺ f(..., v, ...) ∈ L`
 <!-- u =L v if ∀C ∈ C. C[u] ∈ L iff C[v] ∈ L -->
 
-Note the surrounding ellipses denoted by "$\dots$" must be equal on either side of the iff and may be arbitrary terms in `T(F)`.
+Note the surrounding ellipses denoted by `...` must be equal on either side of the iff and may be arbitrary terms in `T(F)`.
 
 Essentially, `u ≡L v`  when `u` and `v` can be "substituted" for each other in any context without
 affecting inclusion in `L`. Now, `A_min` can be defined as follows:
 - Our new states `Q_min` are the equivalence classes of `≡L`.
 - Our accepting states `Qf_min` are the equivalence classes of all terms in `L ⊆ T(F)`.
 - Our transitions are 
-  `f([u₁], ..., [uₙ]) -> [f(u₁, ..., uₙ)]` for each `f ∈ F`.
-  Note that nullary symbols just get sent to their equivalence class.
+  `f([u₁], ..., [uₙ]) -> [f(u₁, ..., uₙ)]` for each `f ∈ F` where `[u]` is the equivalence class of `u`.
+  <!-- Note that nullary symbols just get sent to their equivalence class. -->
 
 We refer the reader to TATA for a minimization procedure that computes `A_min` using `A`.
 <!-- upward merging is also a way -->
 
 *We say a DFTA is complete when there is precisely one transition for each `f ∈ F` and
-input states `q_i`. It is possible to obtain an (incomplete) DFTA which recognizes `L` that is one state
+input states `qᵢ`. It is possible to obtain an (incomplete) DFTA which recognizes `L` that is one state
 smaller than the one described here. In particular, consider the set of terms
 
 <!-- $$\pi = \{u \mid \forall f \in F.~f(\dots, u, \dots) \not\in L\} \subseteq T(F).$$ -->
-`π = {u ∣ ∀f ∈ F. f(..., u, ...) ∈ L} ⊆ T(F)`
+`π = {u ∣ ∀f ∈ F. f(..., u, ...) ∉ L} ⊆ T(F)`
 
-If `π ≠ ∅`, then `π ∈ Q_min` as it trivially defines an equivalence class of `≡L`.
+If `π ≠ ∅`, then `π ∈ Q_min` as it defines an equivalence class of `≡L`.
 Additionally, for any `f` and `q` such that `f(..., π, ...) -> q`, we have that `q` satisfies the
 same property as `π` (as otherwise `π` would have an accepting context). Hence it follows that
-`q = π` definitionally, and all `f` involving `π` transition to `π`. Effectively, `π` is a
-"garbage state" (and is explicitly constructed when completing incomplete DFTAs). Since we don't
-need completeness, we can safely delete this state and all associated transitions, and
-the resulting incomplete DFTA will just "get stuck" without a transition whenever a term would have
+`q = π`, and all transition rules with `π` on the left-hand side transition to `π`. Effectively, `π` is a
+"garbage state" (and is explicitly constructed when completing incomplete DFTAs). Once some sub-term enters
+state `π`, all future transitions return back to `π`. If we don't care about completeness, we can safely delete this state and all associated transitions.
+The resulting incomplete DFTA will just "get stuck" without a transition whenever a term would have
 previously looped on the garbage state.
 
-### Minimal DFTAs → E-graphs
+Note: Garbage states often have many transitions, so they usually aren't worth keeping around.
 
-Now, it's basically by definition that `Q_min` are your e-classes, and each transition `f([u_1],
+## Minimal DFTAs ↔ E-graphs
+
+Notice `Q_min` are e-classes, and each transition `f([u_1],
 ..., [u_n]) -> [f(u_1, ..., u_n)]` is an e-node with symbol `f` belonging in e-class `[f(u_1, ...,
-u_n)]` with child e-classes `[u_1], ..., [u_n]`.
-As expected, congruence of the e-graph follows from `≡L` being a congruence relation and the construction of the transitions.
+u_n)]` with child e-classes `[u_1], ..., [u_n]`. Thus minimal DFTAs and e-graphs are really the same
+thing!
 
-The language `L` can be recovered from the e-graph as the set of all terms that can be extracted
-from the corresponding accepting e-classes.
+Note: An e-graph induces a tree language `L` of the set of all terms that can be extracted from some
+distinguished set of e-classes. In practice this is the typically the root e-class.
 
-## E-graphs → Minimal DFTAs
-Now that we know how minimal DFTAs directly map to e-graphs, we can just run the conversion backwards
-to get DFTAs from e-graphs. 
-
-Consider the example from before:
+To be more concrete, consider the example from before:
 
 ![e-graph example](img/e-graph.png)
 
@@ -287,13 +288,13 @@ We can redraw this in the box notation we gave earlier.
 
 The corresponding DFTA is then given by:
 
-`Q = {q_a, q_1, q_2, q_{a*2}}`
+- `Q = {q_a, q_1, q_2, q_{a*2}}`
 
-`Qf = {q_a}`
+- `Qf = {q_a}`
 
-`F = {a, 1, 2, *(-, -), <<(-, -), /(-, -)}`
+- `F = {a, 1, 2, *(-, -), <<(-, -), /(-, -)}`
 
-`Δ`:
+- `Δ`:
   - `a -> q_a`
   - `*(q_a, q_1) -> q_a`
   - `/(q_{a*2}, q_2) -> q_a`
@@ -303,14 +304,12 @@ The corresponding DFTA is then given by:
   - `*(q_a, q_2) -> q_{a*2}`
   - `<<(q_a, q_1) -> q_{a*2}`
 
-While e-graphs don't inherently have a notion of "accepting", we often care mainly about the "root"
-e-class representing an initial term to be rewritten, so in this conversion we treat it as the
-corresponding accepting state.
+Et voilà!
 
 ## Discussion
 
-We are aware of a couple papers that have considered the relationship between DFTAs and e-graphs (thanks to [Remy
-Wang](https://remy.wang/) for finding these!). [Gulwani et
+We are aware of a couple papers that have considered the relationship between DFTAs and e-graphs. (Thanks to [Remy
+Wang](https://remy.wang/) for finding these!) [Gulwani et
 al.](https://people.eecs.berkeley.edu/~necula/Papers/join_fsttcs04.pdf) relate tree automata to
 *EDAGs*, which is another word for e-graphs. [Bachmair et
 al.](https://link.springer.com/content/pdf/10.1023/B:JARS.0000009518.26415.49.pdf) relate tree
@@ -322,7 +321,7 @@ the first to discuss this correspondence using e-graph terminology.
 <!-- - Paper that, among other things, briefly discusses the connection between DFTAs and e-graphs (referred to as EDAGs in the paper) (NOTE: e-graphs don’t need to be DAGs!): https://people.eecs.berkeley.edu/~necula/Papers/join_fsttcs04.pdf -->
 <!-- - Another paper relating DFTAs to e-graphs (referred to as D-rules in the paper): https://link.springer.com/content/pdf/10.1023/B:JARS.0000009518.26415.49.pdf -->
 
-Independently of e-graphs, PL researchers have recently found uses for tree automata. For example, tree
+Independently from the e-graph literature, PL researchers have recently found uses for tree automata. For example, tree
 grammars have been used to [write better
 parsers](https://michaeldadams.org/papers/restricting-grammars-with-tree-automata/).
 Tree automata intersection has been used for [PBE
@@ -341,7 +340,7 @@ techniques above be further enhanced using equality saturation? How might invers
 e-graphs?
 
 Additionally, egg provides a convenient API for experimenting with and implementing tree automata
-techniques, even when equivalence classes aren't needed.
+techniques, even when equivalence classes aren't required.
 
 We hope this post gives you another perspective on e-graphs and some promising new directions to explore!
 
